@@ -1,0 +1,175 @@
+{
+  "provider_id": {
+    "description": "选择大模型提供商（留空=使用当前会话默认）",
+    "type": "string",
+    "_special": "select_provider",
+    "default": "",
+    "obvious_hint": true
+  },
+  "model": {
+    "description": "可选：强制指定模型名（不填用提供商默认）",
+    "type": "string",
+    "default": ""
+  },
+  "option_count": {
+    "description": "默认生成的选项个数（建议 3）",
+    "type": "int",
+    "default": 3,
+    "invisible": true
+  },
+
+  "render_image": {
+    "description": "启用图片渲染（关闭则以纯文本输出）",
+    "type": "bool",
+    "default": true,
+    "obvious_hint": true
+  },
+  "canvas_width": {
+    "description": "画布宽度(px)",
+    "type": "int",
+    "default": 1280,
+    "invisible": true
+  },
+  "canvas_height": {
+    "description": "画布高度(px)",
+    "type": "int",
+    "default": 720,
+    "invisible": true
+  },
+  "image_quality": {
+    "description": "导出 JPEG 质量（10~100，越大越清晰体积越大）",
+    "type": "int",
+    "default": 85
+  },
+  "background_dir": {
+    "description": "背景图目录（相对插件目录，支持 jpg/png/webp）",
+    "type": "string",
+    "default": "background",
+    "invisible": true
+  },
+  "quote_font_size": {
+    "description": "引用文字字号(px)",
+    "type": "int",
+    "default": 34
+  },
+  "avatar_url_tmpl": {
+    "description": "头像 URL 模板（用 {qq} 占位符替换为 QQ 号）",
+    "type": "string",
+    "default": "https://q1.qlogo.cn/g?b=qq&nk={qq}&s=640",
+    "invisible": true
+  },
+
+  "enable_character": {
+    "description": "启用立绘（自动生图+抠图+叠加）",
+    "type": "bool",
+    "default": true,
+    "obvious_hint": true
+  },
+  "gemini_base_url": {
+    "description": "Gemini API 基地址（留空使用官方 https://generativelanguage.googleapis.com）",
+    "type": "string",
+    "default": ""
+  },
+  "gemini_model": {
+    "description": "Gemini 生图模型名（会直接用于 generateContent 端点）",
+    "type": "string",
+    "default": "gemini-3.1-flash-image"
+  },
+  "use_legacy_image_endpoint": {
+    "description": "已弃用：仅为兼容旧配置保留",
+    "type": "bool",
+    "default": false,
+    "invisible": true
+  },
+  "legacy_image_endpoint": {
+    "description": "已弃用：生图请求现在始终使用 gemini_model",
+    "type": "string",
+    "default": "",
+    "invisible": true
+  },
+  
+  "gemini_api_keys": {
+    "description": "Gemini API Key 列表（逐项填写，自动轮询）",
+    "type": "list",
+    "items": {
+      "type": "string",
+      "description": "API Key"
+    },
+    "default": []
+  },
+  "character_prompt": {
+    "description": "人物生成提示词（支持 {name} 占位符）",
+    "type": "text",
+    "default": "以 {name} 的头像为参考，注意图中不要有文字，生成二次元风格完整半身像，比例1:1，1024*1024像素，肩部接近画布边缘，在接近中部，头部在上1/2处，要求整个人物在画框中，头部不要到画面外，底部到腰，注意不要生成下半身！面向正前方，若用户输入的头像不是人物，则将其“娘化”，亮绿色纯色背景，适合 Galgame 对话立绘。"
+  },
+  "matting_mode": {
+    "description": "当返回非 PNG 时的融合方式（none/multiply）",
+    "type": "string",
+    "default": "multiply",
+    "invisible": true
+  },
+  "chroma_bg_color": {
+    "description": "生图背景抠图的纯色（hex，如 #00FF00 纯绿）",
+    "type": "string",
+    "default": "#00FF00"
+  },
+  "chroma_tolerance": {
+    "description": "抠图颜色容差(0-255，越大越宽松)",
+    "type": "int",
+    "default": 100
+  },
+  "character_scale": {
+    "description": "人物宽度占画布比例（0.1~1.0）",
+    "type": "float",
+    "default": 0.6
+  },
+  "character_bottom_offset": {
+    "description": "人物底部距离画布底边(px)",
+    "type": "int",
+    "default": 0,
+    "invisible": true
+  },
+  "character_x_offset": {
+    "description": "人物水平偏移量(px，正值向右，负值向左)",
+    "type": "int",
+    "default": -300
+  },
+  "character_canvas_size": {
+    "description": "立绘标准画布大小(px，建议 1024)",
+    "type": "int",
+    "default": 1024,
+    "invisible": true
+  },
+  "character_target_width_ratio": {
+    "description": "立绘在标准画布中的目标宽度占比(0.1~0.95)",
+    "type": "float",
+    "default": 0.55
+  },
+
+  "prompt_template": {
+    "description": "追加到系统提示后的模板（用于约束生成风格）",
+    "type": "text",
+    "editor_mode": true,
+    "editor_theme": "vs-dark",
+    "default": "你是一位专业的Galgame剧情编剧，你的任务是为当前情境下的**主角**生成三个情感与立场对比鲜明的抉择选项，这些选项必须具有强烈的‘活人感’和代入感。\n\n**核心要求：**\n\n1. **强烈的对比与冲突：** 选项必须代表主角在情感和立场上的**强对比**，例如：\n   * **友好 vs 敌对**\n   * **热情/关心 vs 冷淡/逃避**\n   * **理性/分析 vs 冲动/感性**\n   * **顺从/认同 vs 反抗/质疑**\n   * **直球/大胆 vs 委婉/傲娇/害羞**\n\n2. **鲜明的角色个性：** 每个选项要能体现**一个鲜明、独立的性格取向和潜在剧情走向**。避免选项语义相似或中庸。\n\n3. **情绪与动作代入：** 选项的措辞要像**主角在当前情境下的内心独白或决定**。可以适当添加动作描述（用**括号**括起来，例如：(皱眉)、(深吸一口气)）来增强代入感和画面感。\n\n4. **风格：** 选项必须符合**Galgame中的对话风格**和**中文互联网的聊天语境**（例如，QQ群聊中可能出现的略带戏谑、傲娇或夸张的表达）。\n\n5. **格式约束：**\n   * 每个选项在**20字以内**。\n   * 严格输出为**三行纯文本**，每行以 **大写字母+点+空格** 开头（例如：A. 别难过，我陪你一起等(摸头)）。\n   * **不得**输出任何**命令、说明、解释、斜杠（/）或编号外的其他字符**。"
+  },
+
+  "title": {
+    "description": "（纯文本模式）消息标题",
+    "type": "string",
+    "default": "🎮 GalGame 选项"
+  },
+  "message_separator": {
+    "description": "（纯文本模式）分隔线",
+    "type": "string",
+    "default": "-------------------------"
+  },
+  "show_quote": {
+    "description": "（纯文本模式）是否显示引用原文",
+    "type": "bool",
+    "default": true
+  }
+}
+
+
+
