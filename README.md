@@ -1,59 +1,70 @@
-# 项目重构中！除非您有修改代码能力否则现在不建议下载
-基于 AstrBot 的 GalGame 风格“选项生成 + 图片渲染 + 立绘叠加”插件（Napcat/OneBot11 测试通过）。
+# astrbot_plugin_qqgal
 
-> 在聊天中“引用消息”作为语境，生成 A/B/C… 多分支选项，并渲染为 Gal UI 图片；支持自动生成人物立绘、抠色并叠加到背景。
-![6f0b057fd7b4d9e2b118aab88cc1bff6](https://github.com/user-attachments/assets/eae2a831-ebff-4e3b-9e3e-ef071278faa3)
-<img width="406" height="624" alt="image" src="https://github.com/user-attachments/assets/17f93a7d-5d64-4e25-aba9-169d1ebb78b6" />
+基于 AstrBot 的 GalGame 风格选项生成与图片渲染插件，已在 NapCat / OneBot 11 环境中测试。
 
-## 新特性（2.0.0）
-- 新增自动生图 + 抠色：
-  - 使用被引用对象头像作为参考，调用 Gemini 原生端点生成立绘，若未成功扣掉背景则在配置中加大抠色范围chroma_tolerance；
-  - 生图背景为亮绿纯色（可配），本地自动采样实际绿幕色，结合边缘连通区、欧氏距离阈值和羽化边缘产出透明 PNG；
-  - 立绘缓存：`charactert/QQ-matte.png`，下次直接复用。
-- 结构与层级优化：背景 < 立绘 < 玻璃层 < 文本；引用区与头像昵称清晰可见。
-- 配置项精简：启用立绘（默认开）、Key 列表、反代地址、抠色参数与立绘位置即可。
-  
-## 第一次生成立绘会比较慢，之后便是直接调用已保存的立绘
-## ⚠️头像立绘会存储在文件夹中，用/刷新立绘 可以刷新自己的立绘
+在聊天中发送文本或引用一条消息，插件会根据语境生成 A/B/C 等分支选项，并渲染成带背景、人物立绘和对话 UI 的图片。
 
-## 指令 🗂️
-- /选项 生成 A/B/C… 多分支选项，并渲染为 Gal UI 图片
-- /刷新立绘 刷新自己的立绘
+## 项目来源与致谢
 
-说明：
-- 指令后文本优先作为语境；若是“引用消息”，读取被回复文本作为语境；
+本项目基于 [bvzrays/astrbot_plugin_qqgal](https://github.com/bvzrays/astrbot_plugin_qqgal) 继续维护和改进，核心创意、基础功能及早期实现均来自原项目。本仓库并非从零开始的原创项目，感谢原作者 **bvzrays** 的开发与开源贡献。
 
-## 安装与使用 🚀
-1. 安装 AstrBot。
-2. 将仓库放入 `AstrBot/data/plugins/astrbot_plugin_qqgal/`。
-3. WebUI → 插件管理：启用并填写 Key、反代地址等。
-4. 协议端推荐 Napcat（OneBot 11）。
+### 相比原项目的改进
 
-## 配置要点 📋
-- 立绘：`enable_character`（默认开）
-- Key：`gemini_api_keys`（列表，多 Key 轮询）
-- 反代：`gemini_base_url`（空则走官方）
-- 生图模型：`gemini_model`（直接用于 Gemini `generateContent` 端点）
-- 抠色：`chroma_bg_color`（默认 #00FF00）、`chroma_tolerance`（默认 80）
-- 位置尺寸：`character_scale`、`character_bottom_offset`、`character_x_offset`
+- 修正 Gemini 生图模型配置：请求会实际使用 WebUI 中设置的 `gemini_model`，不再被隐藏的旧端点配置覆盖。
+- 改善 Gemini 端点兼容性：兼容基础地址中包含 `v1` 或 `v1beta` 的情况，并兼容常见的图片 MIME 字段格式。
+- 改进绿幕抠图：从图片边缘自动估计实际绿幕色，通过边缘连通区域识别背景，并清理被发丝等前景包围的强绿色区域。
+- 增加抠图结果校验：保留原图已有透明度，检测透明区域比例，避免把未成功抠图或异常结果写入缓存并叠加到画面。
+- 增加立绘缓存校验：发现不含有效透明通道的旧缓存时自动忽略并重新生成。
 
-## 资源（背景图） 🖼️
-- 将图片放入 `background/`；渲染时随机选择：
-  - 底层：`cover+blur` 铺满；
-  - 顶层：`contain` 等比居中。
+## 功能
 
-## 工作流程 🧭
-1. 提取语境（文本/引用）。
-2. 生成并规范化选项。
-3. 生图（可选）→ 抠色 → 写入 `QQ-matte.png` → 叠加立绘 → 合成输出。
+- 根据命令文本或引用消息生成多个 GalGame 风格选项。
+- 将背景、立绘、引用内容、头像昵称和选项合成为图片。
+- 使用被引用对象的头像作为参考，通过 Gemini 生成二次元人物立绘。
+- 自动完成绿幕抠图、立绘标准化和本地缓存。
+- 支持多个 Gemini API Key 轮询和自定义反代地址。
 
-## 兼容性 🔌
-- 框架：AstrBot
-- 协议端：Napcat（OneBot 11）
+## 指令
 
-## 许可 📄
-仅用于学习交流，请确保背景/头像素材的版权或授权。
+- `/选项 [文本]`：根据命令后的文本生成选项；引用消息时也可直接使用被引用内容作为语境。
+- `/刷新立绘`：删除并重新生成自己的立绘缓存。
 
-## 致谢 🙏
-- AstrBot 项目与社区
-- Napcat / OneBot 生态
+第一次生成立绘需要调用生图接口，耗时会相对较长；后续会直接使用 `charactert/` 中的本地缓存。
+
+## 安装
+
+1. 安装并运行 [AstrBot](https://github.com/AstrBotDevs/AstrBot)。
+2. 将本仓库放入 `AstrBot/data/plugins/astrbot_plugin_qqgal/`。
+3. 在 AstrBot WebUI 的插件管理中启用插件并完成配置。
+4. 推荐使用 NapCat / OneBot 11 协议端。
+
+## 主要配置
+
+| 配置项 | 说明 |
+| --- | --- |
+| `enable_character` | 是否启用人物立绘生成与叠加 |
+| `gemini_api_keys` | Gemini API Key 列表，支持依次轮询 |
+| `gemini_base_url` | Gemini API 基础地址；留空时使用官方地址 |
+| `gemini_model` | 用于人物生图的 Gemini 模型名 |
+| `chroma_bg_color` | 绿幕基准颜色，默认 `#00FF00` |
+| `chroma_tolerance` | 抠色容差，数值越大匹配范围越宽 |
+| `character_scale` | 立绘在最终画面中的缩放比例 |
+| `character_x_offset` | 立绘水平偏移量 |
+
+更多选项可在 AstrBot WebUI 的插件配置页面中查看。
+
+## 背景资源
+
+将 JPG、PNG 或 WebP 图片放入 `background/`。渲染时会随机选择一张图片，以模糊铺满层和等比居中层组合成背景。
+
+请确保自行添加的背景、头像及其他素材拥有合法的使用权限。
+
+## 许可
+
+本项目沿用原项目的 [AGPL-3.0 License](LICENSE)。使用、修改或分发时请遵守许可证要求，并保留原项目及贡献者的署名信息。
+
+## 相关项目
+
+- 原项目：[bvzrays/astrbot_plugin_qqgal](https://github.com/bvzrays/astrbot_plugin_qqgal)
+- [AstrBot](https://github.com/AstrBotDevs/AstrBot)
+- NapCat / OneBot 生态
